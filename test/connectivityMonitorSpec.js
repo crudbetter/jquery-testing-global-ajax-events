@@ -48,6 +48,7 @@ describe('connectivityMonitor', function() {
 			});
 
 			expect(onConnectionHandler).toHaveBeenCalledWith('success');
+			expect(onConnectionHandler.calls.count()).toEqual(1);
 		});
 	});
 
@@ -65,6 +66,7 @@ describe('connectivityMonitor', function() {
 			});
 
 			expect(onSlowConnectionHandler).toHaveBeenCalledWith('success');
+			expect(onSlowConnectionHandler.calls.count()).toEqual(1);
 		});
 	});
 
@@ -76,6 +78,7 @@ describe('connectivityMonitor', function() {
 			jasmine.clock().tick(deadTimeout + 1);
 
 			expect(onDeadConnectionHandler).toHaveBeenCalledWith('timeout');
+			expect(onDeadConnectionHandler.calls.count()).toEqual(1);
 		});
 	});
 

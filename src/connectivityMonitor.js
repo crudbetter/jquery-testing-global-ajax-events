@@ -11,6 +11,27 @@
 
 	var timeStamps = {};
 
+	var onSend = function(event, xhr, settings) {
+		xhr.identifier = ++counter;
+		timeStamps[xhr.identifier] = event.timeStamp;
+	};
+
+	var onSuccess = function(event, xhr, settings) {
+		if (event.timeStamp > timeStamps[xhr.identifier] + options.slowTimeout) {
+			options.onSlowConnection(xhr.responseText);
+		} else {
+			options.onConnection(xhr.responseText);
+		}
+	};
+
+	var onError = function(event, xhr, settings) {
+		if (xhr.statusText == 'timeout') {
+			options.onDeadConnection(xhr.statusText);
+		}
+	};
+
+	var $doc = $(document);
+
 	var methods = {
 
 		init: function(opts) {
@@ -18,28 +39,17 @@
 		},
 
 		start: function() {
-			$(document).ajaxSend(function(event, xhr, settings) {
-				xhr.identifier = ++counter;
-				timeStamps[xhr.identifier] = event.timeStamp;
-			});
+			$doc.ajaxSend(onSend);
 
-			$(document).ajaxSuccess(function(event, xhr, settings) {
-				if (event.timeStamp > timeStamps[xhr.identifier] + options.slowTimeout) {
-					options.onSlowConnection(xhr.responseText);
-				} else {
-					options.onConnection(xhr.responseText);
-				}
-			});
+			$doc.ajaxSuccess(onSuccess);
 
-			$(document).ajaxError(function(event, xhr, settings) {
-				if (xhr.statusText == 'timeout') {
-					options.onDeadConnection(xhr.statusText);
-				}
-			});
+			$doc.ajaxError(onError);
 		},
 
 		stop: function() {
-
+			$doc.off('ajaxSend', onSend);
+			$doc.off('ajaxSuccess', onSuccess);
+			$doc.off('ajaxError', onError);
 		}
 	}
 
